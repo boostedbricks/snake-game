@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game - Arcade Edition</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1>🐍 SNAKE</h1>
+            <div class="score-board">
+                <div class="score">
+                    <span class="label">Score:</span>
+                    <span id="score">0</span>
+                </div>
+                <div class="high-score">
+                    <span class="label">High Score:</span>
+                    <span id="highScore">0</span>
+                </div>
+            </div>
+        </div>
+        
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+        
+        <div class="controls">
+            <div class="game-status" id="gameStatus">Press SPACE to Start</div>
+            <div class="instructions">
+                <p>🎮 Use Arrow Keys or WASD to move</p>
+                <p>⏸️ Press SPACE to pause/resume</p>
+                <p>🔄 Press R to restart</p>
+            </div>
+            <button id="startBtn" class="btn">Start Game</button>
+            <button id="pauseBtn" class="btn" disabled>Pause</button>
+            <button id="restartBtn" class="btn">Restart</button>
+        </div>
+
+        <div class="difficulty-selector">
+            <label>Difficulty:</label>
+            <button class="difficulty-btn" data-speed="150">Easy</button>
+            <button class="difficulty-btn active" data-speed="100">Normal</button>
+            <button class="difficulty-btn" data-speed="70">Hard</button>
+            <button class="difficulty-btn" data-speed="50">Insane</button>
+        </div>
+    </div>
+
+    <script src="snake.js"></script>
+</body>
+</html>
