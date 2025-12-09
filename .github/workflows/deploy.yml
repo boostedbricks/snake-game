@@ -1,0 +1,62 @@
+name: 🐍 Deploy Snake Game
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  ACR_NAME: ${{ secrets.ACR_NAME }}
+  ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
+  RESOURCE_GROUP: ${{ secrets.RESOURCE_GROUP }}
+  CONTAINER_APP_NAME: ${{ secrets.CONTAINER_APP_NAME }}
+  IMAGE_NAME: snake-game
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+    
+    - name: 🔐 Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    
+    - name: 🐳 Login to ACR
+      run: |
+        az acr login --name ${{ env.ACR_NAME }}
+    
+    - name: 🏗️ Build and tag Docker image
+      run: |
+        echo "Building image..."
+        docker build -t ${{ env.IMAGE_NAME }}:${{ github.sha }} .
+        docker tag ${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:latest
+        docker tag ${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+    
+    - name: 📤 Push to ACR
+      run: |
+        echo "Pushing images to ACR..."
+        docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:latest
+        docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+        echo "✅ Images pushed successfully!"
+    
+    - name: 🚀 Deploy to Container Apps
+      run: |
+        echo "Deploying to Container Apps..."
+        az containerapp update \
+          --name ${{ env.CONTAINER_APP_NAME }} \
+          --resource-group ${{ env.RESOURCE_GROUP }} \
+          --image ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+        echo "✅ Deployment complete!"
+    
+    - name: 🎉 Get App URL
+      run: |
+        APP_URL=$(az containerapp show \
+          --name ${{ env.CONTAINER_APP_NAME }} \
+          --resource-group ${{ env.RESOURCE_GROUP }} \
+          --query properties.configuration.ingress.fqdn -o tsv)
+        echo "🐍 Snake Game URL: https://$APP_URL"
+        echo "🎮 Game is live! Go play!"
